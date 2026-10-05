@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Psikiyatride Somatik Tedaviler kartları</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#E7ECF0; --surface:#FFFFFF; --ink:#16304A; --muted:#5A6B7C; --line:#C9D3DC;
+  --endi:#24785A; --kontr:#B3261E; --yan:#B86E00; --mek:#4A4FB2; --kli:#2A6C8C; --ilac:#A3336B;
+  --chip:#F3F6F8;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0F1B26; --surface:#172634; --ink:#E4ECF3; --muted:#9AAABA; --line:#2A3C4D;
+    --endi:#5CC79A; --kontr:#F2766D; --yan:#F0A93C; --mek:#9EA2FF; --kli:#6CC0E6; --ilac:#F08BB8; --chip:#1D2F3F;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0F1B26; --surface:#172634; --ink:#E4ECF3; --muted:#9AAABA; --line:#2A3C4D;
+  --endi:#5CC79A; --kontr:#F2766D; --yan:#F0A93C; --mek:#9EA2FF; --kli:#6CC0E6; --ilac:#F08BB8; --chip:#1D2F3F;
+}
+*,*::before,*::after{box-sizing:inherit}
+html{height:100%;scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);
+  font-family:"Atkinson Hyperlegible",system-ui,-apple-system,"Segoe UI",sans-serif;font-size:17px;line-height:1.5}
+main{max-width:640px;margin:0 auto;padding:20px 16px 40px}
+h1{font-family:"Bricolage Grotesque","Atkinson Hyperlegible",system-ui,sans-serif;font-weight:800;
+  font-size:clamp(1.6rem,6vw,2.2rem);line-height:1.05;margin:4px 0 6px;letter-spacing:-0.02em}
+.sub{color:var(--muted);margin:0 0 18px;font-size:.95rem}
+.filters{display:flex;flex-direction:column;gap:10px;margin-bottom:16px}
+.row{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none}
+.row::-webkit-scrollbar{display:none}
+.chip{flex:0 0 auto;border:1px solid var(--line);background:var(--chip);color:var(--ink);
+  font:inherit;font-size:.88rem;padding:6px 12px;border-radius:999px;cursor:pointer;white-space:nowrap}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+.chip .dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;vertical-align:1px}
+.meta{display:flex;justify-content:space-between;align-items:center;color:var(--muted);font-size:.9rem;margin-bottom:10px}
+.bar{height:4px;background:var(--line);border-radius:2px;overflow:hidden;margin-bottom:14px}
+.bar i{display:block;height:100%;background:var(--endi);width:0;transition:width .3s}
+.stage{perspective:1400px}
+.card{position:relative;width:100%;min-height:340px;cursor:pointer;transform-style:preserve-3d;
+  transition:transform .45s cubic-bezier(.3,.7,.3,1);border:0;padding:0;background:none;font:inherit;color:inherit;text-align:left;display:block}
+.card.flipped{transform:rotateY(180deg)}
+.face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;
+  background:var(--surface);border-radius:18px;border:1px solid var(--line);
+  display:flex;flex-direction:column;overflow:hidden}
+.face .band{height:10px;background:var(--tag)}
+.face .inner{padding:20px 22px 22px;display:flex;flex-direction:column;flex:1;overflow:auto}
+.back{transform:rotateY(180deg)}
+.tag{font-size:.82rem;font-weight:700;color:var(--tag);margin-bottom:2px}
+.topic{font-size:.82rem;color:var(--muted);margin-bottom:14px}
+.q{font-family:"Bricolage Grotesque","Atkinson Hyperlegible",system-ui,sans-serif;font-weight:500;
+  font-size:clamp(1.25rem,5vw,1.55rem);line-height:1.25;margin:auto 0;letter-spacing:-0.01em}
+.hint{margin-top:18px;color:var(--muted);font-size:.85rem}
+.a{font-size:1rem}
+.a ul{margin:4px 0 0;padding-left:1.1em}
+.a li{margin:3px 0}
+.a b{font-weight:700}
+.a .note{margin-top:10px;padding:10px 12px;border-left:3px solid var(--tag);background:var(--chip);border-radius:0 8px 8px 0;font-size:.93rem}
+.controls{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}
+.btn{font:inherit;font-weight:700;font-size:.98rem;padding:13px 10px;border-radius:12px;cursor:pointer;border:1px solid var(--line);background:var(--surface);color:var(--ink)}
+.btn.know{background:var(--endi);border-color:var(--endi);color:#fff}
+.btn.again{color:var(--kontr);border-color:var(--kontr)}
+.nav{display:flex;justify-content:space-between;gap:10px;margin-top:10px}
+.nav .btn{flex:1;font-weight:400}
+.tools{display:flex;gap:8px;justify-content:center;margin-top:18px;flex-wrap:wrap}
+.tools .btn{font-weight:400;font-size:.88rem;padding:8px 14px}
+.empty{background:var(--surface);border:1px dashed var(--line);border-radius:18px;padding:32px 22px;text-align:center;min-height:340px;display:flex;flex-direction:column;justify-content:center;gap:12px}
+.views{display:flex;gap:0;margin:0 0 16px;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--surface)}
+.views button{flex:1;font:inherit;font-weight:700;padding:10px;border:0;background:none;color:var(--muted);cursor:pointer}
+.views button[aria-pressed="true"]{background:var(--ink);color:var(--surface)}
+.search{width:100%;font:inherit;padding:10px 14px;border:1px solid var(--line);border-radius:12px;background:var(--surface);color:var(--ink);margin-bottom:12px}
+.tbl{overflow-x:auto;background:var(--surface);border:1px solid var(--line);border-radius:14px}
+table{border-collapse:collapse;width:100%;min-width:620px;font-size:.92rem}
+th,td{text-align:left;vertical-align:top;padding:9px 12px;border-bottom:1px solid var(--line)}
+th{position:sticky;top:0;background:var(--chip);font-weight:700;font-size:.85rem;color:var(--muted)}
+td.tic{font-weight:700;color:var(--ilac)}
+td.gen{font-weight:700}
+tr.grp td{background:var(--chip);font-family:"Bricolage Grotesque",system-ui,sans-serif;font-weight:800;font-size:1rem;color:var(--ink)}
+tr:last-child td{border-bottom:0}
+.count{color:var(--muted);font-size:.88rem;margin:8px 2px 0}
+.mn{display:flex;flex-direction:column;gap:12px}
+.mn h2{font-family:"Bricolage Grotesque",system-ui,sans-serif;font-weight:800;font-size:1.2rem;margin:14px 0 0}
+.mi{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px 16px;border-left:6px solid var(--yan)}
+.mi .t{font-size:.85rem;color:var(--muted);font-weight:700}
+.mi .k{font-family:"Bricolage Grotesque",system-ui,sans-serif;font-weight:800;font-size:1.35rem;line-height:1.2;margin:4px 0 6px;letter-spacing:-0.01em}
+.mi .d{font-size:.95rem}
+.mi .d ul{margin:4px 0 0;padding-left:1.1em}
+:focus-visible{outline:3px solid var(--mek);outline-offset:2px}
+@media (prefers-reduced-motion:reduce){.card{transition:none}.bar i{transition:none}}
+</style>
+</head>
+<body>
+<main>
+  <h1>Psikiyatride somatik tedaviler</h1>
+  <p class="sub">Endikasyon, kontrendikasyon, yan etki, mekanizma ve piyasa adı kartları. Karta dokun, cevabı gör.</p>
+
+  <div class="views" role="group" aria-label="Görünüm">
+    <button id="vCards" aria-pressed="true">Kartlar</button>
+    <button id="vTable" aria-pressed="false">Tablo</button>
+    <button id="vMn" aria-pressed="false">Kodlamalar</button>
+  </div>
+  <div class="filters">
+    <div class="row" id="topicRow" aria-label="Konu"></div>
+    <div class="row" id="tagRow" aria-label="Kart türü"></div>
+  </div>
+
+  <section id="tableView" hidden>
+    <input class="search" id="q" type="search" placeholder="İlaç, piyasa adı ya da grup ara" aria-label="Tabloda ara">
+    <div class="tbl"><table><thead><tr><th>Jenerik</th><th>Piyasa adı</th><th>Grup</th><th>Form</th><th>Doz</th></tr></thead><tbody id="tbody"></tbody></table></div>
+    <p class="count" id="tcount"></p>
+  </section>
+  <section id="mnView" hidden><div class="mn" id="mnList"></div></section>
+  <section id="cardView">
+  <div class="meta"><span id="pos"></span><span id="knownCount"></span></div>
+  <div class="bar"><i id="barFill"></i></div>
+
+  <div id="area"></div>
+
+  <div class="tools">
+    <button class="btn" id="shuffleBtn">Karıştır</button>
+    <button class="btn" id="revBtn" aria-pressed="false">Piyasa adından sor</button>
+    <button class="btn" id="hideKnownBtn" aria-pressed="false">Bildiklerimi gizle</button>
+    <button class="btn" id="resetBtn">İlerlemeyi sıfırla</button>
+  </div>
+  </section>
+</main>
+
+<script>
+const TAGS = {
+  endi:{label:"Endikasyon", c:"--endi"},
+  kontr:{label:"Kontrendikasyon / Dikkat", c:"--kontr"},
+  yan:{label:"Yan etki", c:"--yan"},
+  mek:{label:"Mekanizma", c:"--mek"},
+  kli:{label:"Klinik / Doz / İzlem", c:"--kli"},
+  ilac:{label:"Piyasa adı", c:"--ilac"}
+};
+const TOPICS = ["Benzodiazepin & anksiyolitik","Antidepresan","Antipsikotik","Duygudurum düzenleyici","Bilişsel iyileştirici","EKT & TMS"];
+
+const C = [
+// ---------- BZD & anksiyolitik
+["Benzodiazepin & anksiyolitik","endi","Benzodiazepinlerin başlıca kullanım alanları?",
+`<ul><li>Yaygın anksiyete bozukluğu, panik bozukluk, agorafobi, sosyal fobi</li><li>TSSB, OKB</li><li>Alkol / madde yoksunluk (çekilme) sendromları</li><li>Uykusuzluk</li><li>Ameliyat öncesi ve sonrası</li><li>Konvülsif durumlar</li><li>Akatizi</li></ul><div class="note">Manik ve psikotik eksitasyonda nöroleptik / antimaniklere <b>ek olarak</b> kullanılabilir.</div>`],
+["Benzodiazepin & anksiyolitik","mek","Benzodiazepinlerin etki mekanizması?",
+`GABA-A klorid iyon kanalı reseptör kompleksindeki kendi bağlanma bölgelerine tutunur → klorid kanalı <b>daha fazla açılır</b>, nörona daha çok Cl⁻ girer → <b>hiperpolarizasyon</b> ve nöronun uyarılabilirliği azalır.<div class="note">Klinikte: anksiyolitik, sedatif, hipnotik, antikonvülsif, miyorelaksan etkiler.</div>`],
+["Benzodiazepin & anksiyolitik","kontr","Kronik karaciğer hastasında hangi benzodiazepin tercih edilir? Neden?",
+`<b>Lorazepam.</b> BZD'lerin çoğu karaciğerde sitokrom P450 ile metabolize olur; lorazepam ise <b>konjugasyon</b> yoluyla. Karaciğer hastalığında P450 daha çok etkilendiği için lorazepam seçilir.`],
+["Benzodiazepin & anksiyolitik","kli","Parenteral formu olan ve oral solüsyon formu olan BZD'ler?",
+`<ul><li><b>Parenteral:</b> diazepam, midazolam</li><li><b>Oral solüsyon:</b> yalnızca klonazepam</li></ul><div class="note">Klonazepam solüsyonu: ilaç reddi olan psikotik hastada nakil / enjeksiyon öncesi sedasyon.</div>`],
+["Benzodiazepin & anksiyolitik","endi","Midazolam nerelerde kullanılır?",
+`Çok kısa etkili. Amnezi, sedasyon ve hipnotik etki için <b>endoskopi öncesi</b> ve <b>preoperatif</b>. Diazepamla birlikte IV olarak <b>status epileptikus</b> tedavisinde.`],
+["Benzodiazepin & anksiyolitik","yan","Benzodiazepinlerin en sık yan etkileri?",
+`<ul><li>Sedasyon (uyuşukluk)</li><li>Baş dönmesi</li><li>Ataksi</li><li>Amnezi</li><li>İdrar inkontinansı</li></ul><div class="note">Araç kullanma ve tehlikeli işlerde dikkat; ilk günlerde bu aktivitelerden uzak durulmalı.</div>`],
+["Benzodiazepin & anksiyolitik","kontr","IV diazepam uygularken ve BZD kullanırken nelere dikkat edilir?",
+`<ul><li>Solunum depresyonunu önlemek için <b>bir ampul en az 2 dakikada</b> verilmeli</li><li><b>Alkolle birlikte</b> kullanım tehlikeli</li><li>Tolerans ve bağımlılık riski → birkaç hafta / aydan uzun kullanımdan kaçın</li></ul><div class="note">Bağımlılık sorunu ne abartılmalı ne görmezden gelinmeli.</div>`],
+["Benzodiazepin & anksiyolitik","mek","Buspiron: mekanizma, avantaj ve dezavantaj?",
+`<b>5-HT1A parsiyel agonisti.</b><ul><li>Avantaj: bağımlılık yapmaz, alkolle etkileşmez</li><li>Dezavantaj: tek doz etkisi yok; etki <b>~3 hafta</b> sonra başlar</li><li>Doz: 15–30 mg/gün, gerekirse 60 mg'a kadar</li></ul>`],
+["Benzodiazepin & anksiyolitik","endi","Beta blokerler (propranolol, atenolol) anksiyetede ne zaman kullanılır?",
+`<b>Performans anksiyetesi.</b> Performanstan 1 saat önce tek doz. Psişik belirtilere değil, fizyolojik belirtilere etkili; anksiyete → fizyolojik tepki → anksiyete kısır döngüsünü kırar.<div class="note" style="--tag:var(--kontr)">Kalp ve akciğer hastalarında dikkat.</div>`],
+["Benzodiazepin & anksiyolitik","kontr","Barbitüratların dezavantajları?",
+`<ul><li>Hızlı tolerans</li><li>Dar tedavi penceresi, yüksek doz emniyeti yok</li><li>Karaciğer mikrozomal enzim <b>indüksiyonu</b> → çok ilaç etkileşimi</li><li>Birkaç kat doz (özellikle alkol / SSS depresanlarıyla) → <b>solunum depresyonu</b></li></ul><div class="note">Kullanım: anestezi (tiopental) ve epilepsi (fenobarbital) ile sınırlı.</div>`],
+["Benzodiazepin & anksiyolitik","endi","Antihistaminikler ve zopiklon hangi amaçla kullanılır?",
+`<ul><li><b>Doksilamin:</b> yatarken tek doz, hipnotik</li><li><b>Difenhidramin, hidroksizin:</b> hipnotik + güne yayılan dozla anksiyolitik/sedatif</li><li><b>Zopiklon:</b> non-BZD hipnotik; anksiyolitik değil, yatarken tek doz, salt hipnotik</li></ul>`],
+
+// ---------- Antidepresan
+["Antidepresan","kli","Antidepresanların etkisi ne zaman başlar? Hastaya ne söylenmeli?",
+`Terapötik etki <b>3–6 hafta</b> içinde; yan etkiler ise <b>ilk dozdan hemen sonra</b> görülebilir. Bu, hasta ve yakınlarına söylenmeli ki ilk günlerde ilacı bırakmasın.`],
+["Antidepresan","kli","Antidepresan ilaç seçimi neye göre yapılır?",
+`Antidepresanlar arasında etkinlik açısından belirgin üstünlük kanıtı yok. Seçim <b>yan etkiler</b> ve hastadaki <b>eşlik eden hastalık / fizyolojik durumlar</b> göz önüne alınarak yapılır. Tedaviye tek antidepresanla başlanır.`],
+["Antidepresan","kli","Tedaviye yanıt nasıl tanımlanır? Hastaların ne kadarı yanıt verir?",
+`Depresyon ölçeklerinde <b>en az %50 düzelme</b> = yanıt. Başlanan hastaların yaklaşık <b>üçte ikisi</b> yanıt verir.`],
+["Antidepresan","kli","Tedaviye dirençte güçlendirme stratejileri?",
+`<ul><li>Farklı mekanizmalı iki antidepresan</li><li>Lityum eklemek</li><li>Düşük doz olanzapin veya ketiyapin</li><li>Tiroid hormonu (T3–T4)</li><li>Buspiron (5-HT1A parsiyel agonist)</li><li>EKT</li></ul>`],
+["Antidepresan","kli","Relaps ile rekürrens farkı? İdame ne kadar sürmeli?",
+`<ul><li><b>Relaps:</b> düzelirken alevlenme ya da tam düzelmeden sonraki <b>ilk 6 ay</b> içinde belirtilerin dönmesi</li><li><b>Rekürrens:</b> daha sonraki tekrar = yeni atak</li></ul><div class="note">Tam iyilikten sonra <b>en az 6 ay, tercihen 1 yıl</b> ilaca devam.</div>`],
+["Antidepresan","kontr","Hangi antidepresanların ani kesilmesi kesilme belirtilerine yol açar?",
+`<b>Trisiklikler, venlafaksin ve paroksetin.</b> Tedavi sonunda ilaç kesimi olabildiğince tedrici yapılmalı.`],
+["Antidepresan","kli","Başlanan antidepresan anksiyete ya da uykusuzluk yapabilirse ne yapılır?",
+`Tedaviye <b>ilk 3–4 hafta</b> bir benzodiazepin eklenebilir.`],
+["Antidepresan","endi","Antidepresanların depresyon dışı kullanım alanları?",
+`<ul><li>Anksiyete bozuklukları</li><li>Yeme bozuklukları, anoreksiya nervoza</li><li>Premenstrüel gerginlik sendromu</li><li>Kişilik bozuklukları</li><li>Stres tolerans eşiğinin yükselmesi gereken durumlar</li><li>Süreğen ağrılar</li></ul>`],
+["Antidepresan","yan","Serotonin geri alım inhibisyonu: hangi reseptör hangi yan etkiyi yapar?",
+`<ul><li><b>5-HT2A:</b> uyku bozukluğu (insomnia, yavaş dalga uykusunda azalma), anksiyete/ajitasyon, cinsel işlev bozukluğu</li><li><b>5-HT2C:</b> iştahsızlık (uzun dönemde iştah artışı), cinsel işlev bozukluğu, anksiyete</li><li><b>5-HT3:</b> bulantı, kusma</li><li>Diğer: baş ağrısı, diyare</li></ul><div class="note" style="--tag:var(--mek)">Terapötik yol: <b>5-HT1A</b> → antidepresan, anksiyolitik etki.</div>`],
+["Antidepresan","yan","Noradrenalin geri alım inhibisyonunun yan etkileri?",
+`Taşikardi, hipertansiyon, konstipasyon, tremor, anksiyete, ajitasyon.<div class="note" style="--tag:var(--mek)">Terapötik: antidepresan etki.</div>`],
+["Antidepresan","yan","M1 (muskarinik) blokajının yan etkileri?",
+`Ağız kuruluğu, bulanık görme, taşikardi, bilişsel bozulma, konstipasyon, idrar yapmada güçlük, cinsel işlev bozukluğu, kesilme belirtileri.<div class="note" style="--tag:var(--kontr)">Özellikle <b>prostat hipertrofili erkeklerde</b> dikkat.</div>`],
+["Antidepresan","yan","H1 ve α1 blokajının yan etkileri?",
+`<ul><li><b>H1:</b> iştah ve kilo artışı, sedasyon</li><li><b>α1:</b> taşikardi, postural hipotansiyon; prazosin ve terazosinin antihipertansif etkisini güçlendirir</li></ul>`],
+["Antidepresan","mek","5-HT2A, 5-HT3 ve α2 blokajının klinik faydası?",
+`<ul><li><b>5-HT2A blokajı:</b> 2A uyarımına bağlı yan etkileri önler, serotonerjik etkiyi 5-HT1A'ya yönlendirir</li><li><b>5-HT3 blokajı:</b> antiemetik</li><li><b>α2 blokajı:</b> NA ve 5-HT iletimini artırarak antidepresan etki (ör. mirtazapin, mianserin)</li></ul>`],
+["Antidepresan","mek","Antidepresan sınıfları ve örnekleri?",
+`<ul><li><b>MAO-İ:</b> moklobemid</li><li><b>TCA:</b> imipramin, amitriptilin, klomipramin, opipramol; tetrasiklik: maprotilin</li><li><b>SNRI:</b> venlafaksin, milnasipran, duloksetin</li><li><b>SSRI:</b> fluvoksamin, fluoksetin, paroksetin, sertralin, sitalopram, essitalopram</li><li><b>NRI:</b> reboksetin · <b>NDRI:</b> bupropion</li><li><b>5-HT2A antagonistleri:</b> trazodon, mianserin, mirtazapin</li><li><b>Diğer:</b> tianeptin (5-HT geri emilimini artırır), agomelatin (melatonerjik)</li></ul>`],
+
+// ---------- Antipsikotik
+["Antipsikotik","mek","Tüm antipsikotiklerin ortak etki mekanizması?",
+`<b>Postsinaptik D2 reseptör blokajı.</b> Mezolimbik yolaktaki D2 blokajı pozitif belirtileri baskılar; diğer yolaklardaki blokaj ve diğer farmakolojik etkiler yan etkileri oluşturur.`],
+["Antipsikotik","yan","Nigrostriatal yolak D2 blokajı: kısa ve uzun dönem yan etkiler?",
+`Ekstrapiramidal yan etkiler.<ul><li><b>Kısa dönem:</b> akut distoni, parkinsonizm, akatizi</li><li><b>Uzun dönem:</b> tardiv diskinezi, tardiv distoni</li></ul>`],
+["Antipsikotik","yan","Mezokortikal yolak D2 blokajının sonucu?",
+`<b>Negatif belirtilerin şiddetlenmesi:</b> apati, aloji, avolisyon, dikkatte azalma, sosyal-duygusal içe çekilme, özbakım eksikliği.`],
+["Antipsikotik","yan","Tuberoinfundibuler yolak D2 blokajının sonucu?",
+`Prolaktin disinhibisyonu → <b>hiperprolaktinemi</b>: libido azalması; erkekte ereksiyon/ejakülasyon sorunu; kadında anorgazmi, menstrüasyon bozukluğu, galaktore.`],
+["Antipsikotik","yan","Antipsikotiklerde α1, H1, M1, 5-HT2C ve K⁺ kanal blokajının yan etkileri?",
+`<ul><li><b>α1:</b> postural hipotansiyon, taşikardi, baş dönmesi</li><li><b>H1 & 5-HT2C:</b> iştah, kilo artışı (H1: sedasyon)</li><li><b>M1:</b> konstipasyon, idrar retansiyonu, bulanık görme, ağız kuruluğu, taşikardi</li><li><b>K⁺ kanal:</b> aritmi, QTc uzaması</li></ul>`],
+["Antipsikotik","yan","Antipsikotiklerin “diğer” yan etkileri?",
+`<ul><li>Nöroleptik malign sendrom</li><li>Pigmenter retinopati (körlük yapabilir)</li><li>Konvülsiyon eşiğinin düşmesi</li><li>Kan tablosu değişiklikleri (en tehlikelisi agranülositoz)</li><li>Metabolik sendrom</li></ul>`],
+["Antipsikotik","mek","Atipik antipsikotiklerde 5-HT2A blokajı yan etkileri neden azaltır?",
+`5-HT2A, dopamin nöronları üzerinde heteroreseptördür; uyarılınca dopamin salınımını frenler. Atipikler bunu bloke ederek frenlemeyi kaldırır (disinhibisyon) → mezolimbik dışı yolaklarda göreli dopamin artışı → EPS ve diğer yan etkiler hafifler.`],
+["Antipsikotik","kli","Atipiklik ölçütleri?",
+`<ul><li>Terapötik dozda EPS yok ya da çok az</li><li>Negatif belirtilere etkili ya da en azından şiddetlendirmez</li><li>5-HT2A afinitesi > D2 afinitesi (aripiprazol, amisülprid, sülpirid için geçerli değil)</li></ul>`],
+["Antipsikotik","kli","Antipsikotik tedavi ne kadar sürmeli?",
+`<ul><li><b>İlk psikoz</b> + tam iyilik: <b>1 yıl</b> sonra kesilebilir</li><li><b>Tekrarlayan psikoz öyküsü:</b> <b>yaşam boyu</b></li></ul><div class="note">Her dönemde yeterli <b>en düşük dozda</b> kullanılmalı.</div>`],
+["Antipsikotik","kli","Tedavi uyumu kötü hastada ne yapılır?",
+`<b>Depo ilaç</b> tercih edilir. Risperidon, paliperidon, aripiprazolün uzun etkili formları var ama bunlar depo değildir; uygulama esnekliği sınırlı, yalnızca uyumu çok iyi hastalara uygun.`],
+["Antipsikotik","kontr","Antipsikotik ilaç değiştirirken nasıl yapılmalı?",
+`Birden kesip yenisine başlamak <b>sakıncalı</b>. Doğrusu: yeni ilacı eklemek, birkaç haftada tedavi dozuna çıkmak, eskisini azaltarak kesmek (çapraz geçiş).`],
+["Antipsikotik","kli","Klozapinin özel önemi? Tedaviye direnç tanımı?",
+`Klozapin, <b>tedaviye dirençli şizofrenide etkinliği kanıtlanmış tek</b> antipsikotik.<div class="note">Direnç: farklı sınıftan en az 2 antipsikotik, 600 mg klorpromazin eşdeğeri dozda, 4–6 hafta → belirtilerde en az %50 düzelme sağlanamaması.</div>`],
+["Antipsikotik","kontr","Klozapin – agranülositoz takibi nasıl yapılır?",
+`Sıklık ~%1, vakaların %75'i ilk <b>4,5 ayda</b>.<ul><li>İlk 4,5 ay: <b>her hafta</b> lökosit sayımı</li><li>Sonrası: <b>ayda bir</b></li><li>Lökosit <b>&lt;3000</b> → kes, normale dönünce başlanabilir</li><li>Lökosit <b>&lt;2000</b> → bir daha başlanmamak üzere kes</li></ul>`],
+["Antipsikotik","kontr","QTc sınırları: ne zaman başlanmaz, ne zaman kesilir?",
+`<ul><li>Normal: erkek &lt;430, kadın &lt;450 ms</li><li>Tedavi öncesi erkek &gt;450, kadın &gt;470 ms → <b>başlama</b></li><li>&gt;500 ms <b>tehlikeli</b></li><li>Tedavide <b>25 ms'den fazla artış</b> → kes</li></ul>`],
+["Antipsikotik","yan","Nöroleptik malign sendrom (NMS) bulguları?",
+`<ul><li><b>Otonomik:</b> yüksek ateş, HT/hipotansiyon, taşi/bradikardi, takipne, hipersalivasyon, aşırı terleme, idrar inkontinansı</li><li>Şiddetli <b>kurşun boru rijidite</b>, tremor, DTR canlanması</li><li>Stupor / deliryum</li><li><b>Lab:</b> lökositoz, <b>CPK</b> normalin en az 3 katı</li></ul>`],
+["Antipsikotik","yan","Metabolik sendrom kriterleri?",
+`<ul><li>Bel: erkek &gt;102 cm, kadın &gt;88 cm</li><li>HDL: erkek &lt;40, kadın &lt;50 mg/dL</li><li>Trigliserid ≥150 mg/dL</li><li>Kan basıncı ≥130/85</li><li>Açlık şekeri ≥110 mg/dL</li></ul><div class="note">Kısa dönem: DKA, non-ketotik hiperosmolarite. Uzun dönem: mikro/makrovasküler hastalıklar.</div>`],
+["Antipsikotik","endi","Psikozun tanımlayıcı olduğu hastalıklar hangileri?",
+`Kısa psikotik bozukluk, şizofreniform, şizofreni, şizoaffektif, sanrılı bozukluk, paylaşılmış psikotik bozukluk, madde ve genel tıbbi duruma bağlı psikotik bozukluk.<div class="note">Psikoz olabilir de olmayabilir de: unipolar depresyon, bipolar, demanslar, deliryum, mental retardasyon, kişilik bozuklukları.</div>`],
+["Antipsikotik","kli","Klozapin dışında antipsikotik seçimi neye göre yapılır?",
+`Etkinlik açısından birini diğerine tercih ettiren neden yok. Seçim <b>yan etkiler, hedef belirtiler, fiyat</b> vb. göre yapılır.`],
+["Antipsikotik","kli","İlaç reddi olan psikotik hastaya yaklaşım?",
+`Reddin nedenleri: hastalık oryantasyonunun olmaması ve <b>tahammülü güç yan etkiler</b>. Bu yüzden hastaya <b>empati</b> yapılmalı; yan etkiler konusunda gereksiz endişe yaratmadan bilgilendirilmeli.`],
+
+// ---------- Duygudurum
+["Duygudurum düzenleyici","endi","Duygudurum düzenleyicilerin başlıca endikasyonu?",
+`<b>Bipolar bozukluğun profilaksisi ve tedavisi.</b> Lityum dışındakilerin hepsi birincil endikasyonu epilepsi olan antiepileptiklerdir (valproat, karbamazepin, okskarbazepin, topiramat, gabapentin, lamotrijin).`],
+["Duygudurum düzenleyici","kli","Lityum hedef kan düzeyleri?",
+`<ul><li><b>Akut mani:</b> 0,8–1,2 mEq/L</li><li><b>Profilaksi:</b> 0,4–0,8 mEq/L</li></ul>`],
+["Duygudurum düzenleyici","yan","Lityumun sık yan etkileri (sistemlere göre)?",
+`<ul><li><b>Nörolojik:</b> tremor, sedasyon, konsantrasyon bozukluğu, unutkanlık</li><li><b>Endokrin/renal:</b> hipotiroidi, guatr, nefrojenik diabetes insipidus (poliüri, polidipsi)</li><li><b>GİS:</b> bulantı, kusma, diyare, iştah ve kilo artışı</li><li><b>Deri:</b> akne, psöriazis alevlenmesi, saç dökülmesi</li><li><b>Diğer:</b> kalp iletim bozukluğu, lökositoz</li></ul>`],
+["Duygudurum düzenleyici","kontr","Lityum intoksikasyonu: eşikler ve tedavi?",
+`<ul><li><b>≥1,5 mEq/L:</b> başlar; bulantı-kusma ısrarlı, tremor belirgin, DTR artar, dizartri, kas güçsüzlüğü, koreatetoik hareketler</li><li><b>&gt;2,5:</b> konfüzyon</li><li><b>~4:</b> kalp iletim bozukluğu (VF), akut böbrek yetmezliği, koma, ölüm riski</li></ul><div class="note">Yapılabilecek tek müdahale: <b>hemodiyaliz</b>.</div>`],
+["Duygudurum düzenleyici","kli","Lityum öncesi tetkikler ve izlem?",
+`<ul><li>Öncesi: <b>EKG, tiroid, böbrek</b> (BUN, kreatinin, tam idrar)</li><li>Tiroid ve böbrek: en az <b>yılda bir</b></li><li>Kan düzeyi: en az <b>6 ayda bir</b>; ayrıca intoksikasyon şüphesi, yan etkide artış, nüks ve tıbbi gereklilikte</li></ul>`],
+["Duygudurum düzenleyici","kontr","Lityumda hangi durumlarda doz düşürülür?",
+`<b>Tuz kısıtlaması</b> gerektiren durumlar ve <b>aşırı terleten işler</b>: doz azaltılır, kan düzeyi daha sık ölçülür.`],
+["Duygudurum düzenleyici","kli","Duygudurum düzenleyici kan düzeyi ölçüm kuralları?",
+`<ul><li>Tedavi dozuna çıktıktan en az <b>5 gün</b> sonra</li><li>Son dozdan tam <b>12 saat</b> sonra</li><li>O saatte ilaç alınacaksa önce kan, sonra ilaç</li></ul>`],
+["Duygudurum düzenleyici","yan","Valproatın yan etkileri?",
+`<ul><li><b>Doza bağlı:</b> iştah/kilo artışı, saç dökülmesi, sedasyon, tremor</li><li><b>İdiosinkratik:</b> hepatotoksisite (özellikle çocuklarda), akut hemorajik pankreatit, kan tablosu değişiklikleri</li></ul>`],
+["Duygudurum düzenleyici","yan","Karbamazepinin yan etkileri?",
+`<ul><li><b>Doza bağlı:</b> sedasyon, diplopi, ataksi, nistagmus, vertigo, <b>hiponatremi</b>, döküntü</li><li><b>İdiosinkratik:</b> <b>aplastik anemi</b>, Stevens-Johnson sendromu, hepatotoksisite</li></ul>`],
+["Duygudurum düzenleyici","yan","Lamotrijin, gabapentin ve topiramat yan etkileri?",
+`<ul><li><b>Lamotrijin:</b> tehlikeli alerji (döküntü, ateş, lenfadenopati); baş ağrısı, baş dönmesi, uykusuzluk, akne</li><li><b>Gabapentin:</b> baş dönmesi, uyuşukluk, bulantı-kusma</li><li><b>Topiramat:</b> parestezi, ÜSYE, diyare, bulantı, iştahsızlık</li></ul>`],
+["Duygudurum düzenleyici","kontr","Lamotrijin dozu diğer ilaçlarla nasıl ayarlanır?",
+`<ul><li><b>Karbamazepin</b> ile: doz <b>2 katına</b> çıkarılır</li><li><b>Valproat</b> ile: doz <b>yarıya</b> indirilir</li></ul><div class="note" style="--tag:var(--endi)">Lamotrijin bipolar bozuklukta asıl olarak <b>depresyon profilaksisinde</b> etkili.</div>`],
+
+// ---------- Bilişsel
+["Bilişsel iyileştirici","mek","Alzheimer'da kullanılan ilaçlar ve mekanizmaları?",
+`<ul><li><b>Asetilkolinesteraz inhibitörleri</b> (kolinerjik aktiviteyi artırır): donepezil, rivastigmin (patch formu da var), galantamin</li><li><b>Memantin:</b> glutamat <b>NMDA blokajı</b></li></ul>`],
+
+// ---------- EKT & TMS
+["EKT & TMS","endi","EKT'nin günümüzdeki başlıca endikasyonları?",
+`<ul><li>Tedaviye dirençli duygudurum bozuklukları: <b>depresyon ve mani</b></li><li>Şizofreninin <b>katatonik</b> formu</li></ul>`],
+["EKT & TMS","kontr","EKT'nin belli başlı kontrendikasyonları?",
+`<ul><li>Yeni geçirilmiş <b>miyokard enfarktüsü</b></li><li>Kafa içinde <b>herniasyon riski</b> oluşturan yer kaplayan lezyon</li><li>Ağır sistemik ya da SSS <b>enfeksiyonu</b></li><li><b>Feokromositoma</b></li></ul><div class="note" style="--tag:var(--kli)">Anestezi altında yapıldığı için kesin kontrendikasyon sayısı çok azalmıştır.</div>`],
+["EKT & TMS","yan","Anestezili EKT'nin başlıca yan etkisi?",
+`<b>Unutkanlık</b> ve buna bağlı bilişsel sorunlar: postiktal konfüzyon, retroanterograd amnezi. Hemen herkeste görülür ama tedavi bitince <b>birkaç hafta</b> içinde düzelir.`],
+["EKT & TMS","yan","Anestezisiz EKT'nin yan etkileri?",
+`Apne uzaması, kas-eklem ağrıları, uzun kemik uçlarında kopma kırıkları, aspirasyon sorunları, çene çıkması, dil ısırılması.`],
+["EKT & TMS","kontr","EKT döneminde ilaçlarla ilgili dikkat edilecek nokta?",
+`Psikotrop ilaçlar mümkünse kesilmeli ya da düşük dozda tutulmalı. <b>Benzodiazepinlerden özellikle kaçınılmalı</b> (konvülsiyon eşiğini yükseltir).`],
+["EKT & TMS","kli","Bilateral vs unilateral EKT farkı?",
+`Elektrotlar frontotemporal bölgeye. <b>Bilateral:</b> tedavi etkisi daha iyi. <b>Unilateral:</b> daha az bilişsel yan etki.`],
+["EKT & TMS","kli","EKT sıklığı ve bir kürdeki seans sayısı?",
+`<ul><li>Genelde <b>haftada 3</b>; haftada 2 de eşdeğer etkili (daha az bilişsel YE, ama süre uzar)</li><li>Bir kür: <b>6–12 seans</b></li></ul>`],
+["EKT & TMS","kli","EKT öncesi ve sonrası pratik noktalar?",
+`<ul><li><b>Öncesi:</b> yaşa ve tıbbi duruma göre konsültasyon; hastanın <b>mesanesini boşaltması</b> (nöbette sfinkter kontrolü bozulur)</li><li><b>Sırasında:</b> omuz, kalça, ayaklardan hafifçe tutacak yeterli eleman</li><li><b>Sonrası:</b> kendine gelene kadar masada; postiktal konfüzyon bitene dek yoğun bakım koşulları</li></ul>`],
+["EKT & TMS","mek","EKT etki mekanizmasına dair hipotezler?",
+`<ul><li><b>Nörotransmitter:</b> 5-HT ve NA iletiminde artış</li><li><b>Nöroendokrin/diensefalik:</b> HPA aksı uyarılır</li><li><b>Nörofizyolojik:</b> EEG'de prefrontal yavaşlama</li><li><b>Nörogenez/nörotrofik:</b> hipokampusta nörogenez artışı</li></ul><div class="note" style="--tag:var(--kli)">İlk EKT: 1938, İtalya, Cerletti ve Bini.</div>`],
+["EKT & TMS","endi","TMS hangi durumlarda kullanılır? Yan etkisi?",
+`<b>Depresyon</b>; ayrıca obsesif-kompulsif belirtiler ve şizofrenideki <b>işitsel varsanılarda</b> etkili olduğuna dair çalışmalar var. Tahammül iyi, önemli yan etkisi yok.`]
+];
+
+// [konu, jenerik, ticari, form, doz, grup]
+const DRUGS = [
+["Benzodiazepin & anksiyolitik","Diazepam","DIAZEM","2, 5, 10 mg kap.; 10 mg amp.","","Benzodiazepin"],
+["Benzodiazepin & anksiyolitik","Klorazepat","TRANXILENE","5, 10 mg kap.","","Benzodiazepin"],
+["Benzodiazepin & anksiyolitik","Klonazepam","RIVOTRIL","2 mg tab.; damla (25 damla = 2 mg)","","Benzodiazepin"],
+["Benzodiazepin & anksiyolitik","Alprazolam","XANAX","0,5 ve 1 mg tab.","","Benzodiazepin"],
+["Benzodiazepin & anksiyolitik","Lorazepam","ATIVAN","1 ve 2,5 mg expidet tab. (ağızda eriyen)","","Benzodiazepin"],
+["Benzodiazepin & anksiyolitik","Midazolam","DORMICUM","5, 15 ve 50 mg amp.","","Benzodiazepin"],
+["Benzodiazepin & anksiyolitik","Buspiron","BUSPON","5 mg kap.","15–30 mg/gün (en çok 60)","5-HT1A parsiyel agonist"],
+["Benzodiazepin & anksiyolitik","Tiopental","PENTOTHAL","","","Çok kısa etkili barbitürat"],
+["Benzodiazepin & anksiyolitik","Fenobarbital","LUMINAL","","","Uzun etkili barbitürat"],
+["Benzodiazepin & anksiyolitik","Doksilamin","UNISOM","","Yatarken tek doz","Antihistaminik (hipnotik)"],
+["Benzodiazepin & anksiyolitik","Difenhidramin","BENADRYL","","","Antihistaminik"],
+["Benzodiazepin & anksiyolitik","Hidroksizin","ATARAX","","","Antihistaminik"],
+["Benzodiazepin & anksiyolitik","Zopiklon","IMOVANE","","Yatarken tek doz","Non-BZD hipnotik"],
+
+["Antidepresan","Moklobemid","AURORIX","150 ve 300 mg tab.","300–600 mg/gün","MAO inhibitörü"],
+["Antidepresan","İmipramin","TOFRANIL","10 ve 25 mg tab.","150–300 mg/gün","Trisiklik"],
+["Antidepresan","Amitriptilin","LAROXYL","10 ve 25 mg tab.","150–300 mg/gün","Trisiklik"],
+["Antidepresan","Klomipramin","ANAFRANIL","25 ve 75 mg tab.","150–300 mg/gün","Trisiklik"],
+["Antidepresan","Opipramol","INSIDON","50 mg tab.","150–300 mg/gün","Trisiklik"],
+["Antidepresan","Maprotilin","LUDIOMIL","25 ve 75 mg tab.","150–225 mg/gün","Tetrasiklik"],
+["Antidepresan","Venlafaksin","EFEXOR","37,5, 75 ve 150 mg kap.","75–375 mg/gün","SNRI"],
+["Antidepresan","Milnasipran","IXEL","25 ve 50 mg kap.","100 mg/gün","SNRI"],
+["Antidepresan","Duloksetin","CYMBALTA","30 ve 60 mg kap.","60–90 mg/gün","SNRI"],
+["Antidepresan","Fluvoksamin","FAVERIN","100 mg tab.","100–200 mg/gün","SSRI"],
+["Antidepresan","Fluoksetin","PROZAC","20 mg kap.; solüsyon 20 mg/5 ml","20–40 mg/gün","SSRI"],
+["Antidepresan","Paroksetin","PAXIL","20 mg tab.","20–40 mg/gün","SSRI"],
+["Antidepresan","Sertralin","LUSTRAL","50 ve 100 mg tab.","50–100 mg/gün","SSRI"],
+["Antidepresan","Sitalopram","CIPRAM","20 mg tab.","20–40 mg/gün","SSRI"],
+["Antidepresan","Essitalopram","CIPRALEX","10 ve 20 mg tab.","10–20 mg/gün","SSRI"],
+["Antidepresan","Reboksetin","EDRONAX","4 mg tab.","8 mg/gün","NRI"],
+["Antidepresan","Bupropion","WELLBUTRIN","150 mg tab.","150–450 mg/gün","NDRI"],
+["Antidepresan","Trazodon","DESYREL","50 ve 100 mg tab.","300–600 mg/gün","5-HT2A antagonisti"],
+["Antidepresan","Mianserin","TOLVON","10 ve 30 mg tab.","30–90 mg/gün","5-HT2A antagonisti"],
+["Antidepresan","Mirtazapin","REMERON","30 mg tab.","30 mg/gün","5-HT2A antagonisti"],
+["Antidepresan","Tianeptin","STABLON","12,5 mg tab.","37,5 mg/gün","Diğer atipik (5-HT geri emilimini artırır)"],
+["Antidepresan","Agomelatin","VALDOXAN","25 mg tab.","25–50 mg/gün","Diğer atipik (melatonerjik)"],
+
+["Antipsikotik","Klorpromazin","LARGACTIL","100 mg tab.; 25 mg amp.","400–1000 mg/gün","Tipik – fenotiyazin"],
+["Antipsikotik","Trifluoperazin","STILIZAN","1, 2 ve 5 mg tab.; 5 mg amp.","5–20 mg/gün","Tipik – fenotiyazin"],
+["Antipsikotik","Flufenazin","PROLIXIN","25 mg amp. (depo)","2–4 haftada bir","Tipik – fenotiyazin"],
+["Antipsikotik","Haloperidol","NORODOL","5, 10, 20 mg tab.; 5 ve 10 mg amp.; damla (10 damla = 1 mg)","5–20 mg/gün","Tipik – butirofenon"],
+["Antipsikotik","Pimozid","NOROFREN","2 mg tab.","2–6 mg/gün","Tipik – difenilbütilpiperidin"],
+["Antipsikotik","Zuklopentiksol","CLOPIXOL","2 ve 10 mg tab.; damla (1 damla = 1 mg); 50 mg amp. Acuphase; 200 mg amp. depo","Oral 2–20 mg/gün; Acuphase 3 günde bir; depo 2–4 haftada bir","Tipik – tiyoksanten"],
+["Antipsikotik","Flupentiksol","FLUANXOL","3 mg tab.; 20 mg amp. depo","Oral 3–6 mg/gün; depo 2–4 haftada bir","Tipik – tiyoksanten"],
+["Antipsikotik","Klozapin","LEPONEX","25 ve 100 mg tab.","200–900 mg/gün","Atipik"],
+["Antipsikotik","Risperidon","RISPERDAL (uzun etkili: RISPERDAL CONSTA)","1, 2, 3, 4 mg tab.; solüsyon (1 cc = 1 mg); 25, 37,5, 50 mg vial","Oral 2–8 mg/gün; vial 2 haftada bir","Atipik"],
+["Antipsikotik","Paliperidon","INVEGA (uzun etkili: XEPLION, TREVICTA)","3, 6 ve 9 mg tab.","3–9 mg/gün","Atipik"],
+["Antipsikotik","Olanzapin","ZYPREXA","5, 10 mg tab.; 10 mg vial (akut)","5–20 mg/gün","Atipik"],
+["Antipsikotik","Ketiyapin","SEROQUEL","25, 50, 100, 200, 300, 400 mg tab.","200–800 mg/gün","Atipik"],
+["Antipsikotik","Ziprasidon","ZELDOX","20, 40, 60, 80 mg kap.; 20 mg vial","80–160 mg/gün","Atipik"],
+["Antipsikotik","Aripiprazol","ABILIFY (uzun etkili: ABILIFY MAINTENA)","10, 15, 30 mg tab.; 7,5 mg/ml vial","10–30 mg/gün","Atipik"],
+["Antipsikotik","Sülpirid","DOGMATIL","200 mg tab.","600–1800 mg/gün","Atipik"],
+["Antipsikotik","Amisülprid","SOLIAN","200 ve 400 mg tab.; solüsyon (1 cc = 1 mg)","400–800 mg/gün","Atipik"],
+["Antipsikotik","Sertindol","SERDOLECT","4, 12, 16, 20 mg tab.","12–24 mg/gün","Atipik"],
+
+["Duygudurum düzenleyici","Lityum","LITHURIL","300 mg kap.","Akut mani 0,8–1,2 mEq/L; profilaksi 0,4–0,8 mEq/L","Duygudurum düzenleyici"],
+["Duygudurum düzenleyici","Valproat","DEPAKIN","200 ve 500 mg tab.","Kan düzeyi 50–100 µg/ml","Antiepileptik"],
+["Duygudurum düzenleyici","Karbamazepin","TEGRETOL","200–400 mg tab.","Kan düzeyi 4–12 µg/ml","Antiepileptik"],
+["Duygudurum düzenleyici","Okskarbazepin","TRILEPTAL","150, 300 ve 600 mg tab.","600–2400 mg/gün","Antiepileptik"],
+["Duygudurum düzenleyici","Topiramat","TOPAMAX","25, 50, 100 ve 200 mg tab.","600 mg/gün (kitaptaki değer)","Antiepileptik"],
+["Duygudurum düzenleyici","Gabapentin","NEURONTIN","300 mg tab.","900–1800 mg/gün","Antiepileptik"],
+["Duygudurum düzenleyici","Lamotrijin","LAMICTAL","25, 50, 100 ve 200 mg tab.","100–400 mg/gün","Antiepileptik"],
+
+["Bilişsel iyileştirici","Donepezil","ARICEPT","5 ve 10 mg tab.","5–10 mg/gün","AChE inhibitörü"],
+["Bilişsel iyileştirici","Rivastigmin","EXELON","1,5, 3, 4,5, 6 mg tab.; patch","6–12 mg/gün","AChE inhibitörü"],
+["Bilişsel iyileştirici","Galantamin","REMINYL","4, 8 mg tab.; 8, 16, 24 mg XR kap.; 4 mg/ml sol.","8–24 mg/gün","AChE inhibitörü"],
+["Bilişsel iyileştirici","Memantin","EBIXA","10 mg tab.; 1 mg/ml sol.","20 mg/gün","NMDA blokeri"]
+];
+let reverse = false;
+DRUGS.forEach(d=>C.push([d[0],"ilac",null,null,{gen:d[1],tic:d[2],form:d[3],doz:d[4],grup:d[5]}]));
+C.push(["Antipsikotik","ilac","Tipik antipsikotiklerin kimyasal sınıfları ve örnekleri?",
+`<ul><li><b>Fenotiyazin:</b> klorpromazin (LARGACTIL), trifluoperazin (STILIZAN), flufenazin (PROLIXIN)</li><li><b>Butirofenon:</b> haloperidol (NORODOL)</li><li><b>Difenilbütilpiperidin:</b> pimozid (NOROFREN)</li><li><b>Tiyoksanten:</b> zuklopentiksol (CLOPIXOL), flupentiksol (FLUANXOL)</li></ul>`]);
+C.push(["Antipsikotik","ilac","Parenteral uzun etkili (ama depo olmayan) atipik formlar?",
+`<ul><li>Risperidon: <b>RISPERDAL CONSTA</b></li><li>Paliperidon: <b>XEPLION, TREVICTA</b></li><li>Aripiprazol: <b>ABILIFY MAINTENA</b></li></ul><div class="note">Uygulama esnekliği sınırlı; yalnızca uyumu çok iyi hastalara uygun.</div>`]);
+
+const cards = C.map((c,i)=>({id:i,topic:c[0],tag:c[1],q:c[2],a:c[3],drug:c[4]}));
+const store = {
+  get(){try{return JSON.parse(localStorage.getItem("psk-known")||"[]")}catch(e){return []}},
+  set(v){try{localStorage.setItem("psk-known",JSON.stringify(v))}catch(e){}}
+};
+let known = new Set(store.get());
+let topic = "Tümü", tag = "all", hideKnown = false, order = cards.map(c=>c.id), idx = 0, flipped = false;
+
+const $ = s=>document.querySelector(s);
+function chip(label, pressed, onclick, color){
+  const b=document.createElement("button");b.className="chip";b.setAttribute("aria-pressed",pressed);
+  b.innerHTML=(color?`<span class="dot" style="background:var(${color})"></span>`:"")+label;b.onclick=onclick;return b;
+}
+function renderFilters(){
+  const tr=$("#topicRow");tr.innerHTML="";
+  ["Tümü",...TOPICS].forEach(t=>tr.appendChild(chip(t,t===topic,()=>{topic=t;idx=0;render()})));
+  const gr=$("#tagRow");gr.innerHTML="";
+  gr.appendChild(chip("Tüm türler",tag==="all",()=>{tag="all";idx=0;render()}));
+  Object.entries(TAGS).forEach(([k,v])=>gr.appendChild(chip(v.label,tag===k,()=>{tag=k;idx=0;render()},v.c)));
+}
+function deck(){
+  return order.map(i=>cards[i]).filter(c=>(topic==="Tümü"||c.topic===topic)&&(tag==="all"||c.tag===tag)&&(!hideKnown||!known.has(c.id)));
+}
+function render(){
+  renderFilters();
+  if(typeof view!=='undefined'&&view==='table'){renderTable();return;}
+  if(typeof view!=='undefined'&&view==='mn'){renderMn();return;}
+  const d=deck(); if(idx>=d.length) idx=Math.max(0,d.length-1); flipped=false;
+  const area=$("#area");
+  const pool=cards.filter(c=>(topic==="Tümü"||c.topic===topic)&&(tag==="all"||c.tag===tag));
+  const k=pool.filter(c=>known.has(c.id)).length;
+  $("#knownCount").textContent=`Biliyorum: ${k} / ${pool.length}`;
+  $("#barFill").style.width=pool.length?(k/pool.length*100)+"%":"0";
+  if(!d.length){
+    $("#pos").textContent="0 kart";
+    area.innerHTML=`<div class="empty"><b>Bu filtrede gösterilecek kart kalmadı.</b><span>Hepsini biliyorsun ya da filtre boş. Başka bir konu seç veya “Bildiklerimi gizle”yi kapat.</span></div>`;
+    return;
+  }
+  const c=d[idx], t=TAGS[c.tag];
+  let Q=c.q, A=c.a;
+  if(c.drug){const g=c.drug;
+    const rows=`<ul>${g.form?`<li><b>Form:</b> ${g.form}</li>`:""}${g.doz?`<li><b>Doz:</b> ${g.doz}</li>`:""}<li><b>Grup:</b> ${g.grup}</li></ul>`;
+    if(reverse){Q=`${g.tic.split(" (")[0]} hangi ilacın piyasa adı?`;A=`<b style="font-size:1.25rem">${g.gen}</b>`+rows;}
+    else{Q=`${g.gen}: piyasa adı ne?`;A=`<b style="font-size:1.25rem">${g.tic}</b>`+rows;}
+  }
+  $("#pos").textContent=`${idx+1} / ${d.length}`;
+  area.innerHTML=`
+  <div class="stage"><button class="card" id="card" style="--tag:var(${t.c})" aria-label="Kartı çevir">
+    <div class="face front"><div class="band"></div><div class="inner">
+      <div class="tag">${t.label}</div><div class="topic">${c.topic}</div>
+      <div class="q">${Q}</div><div class="hint">${known.has(c.id)?"✓ Bildiklerinde. ":""}Cevap için dokun</div>
+    </div></div>
+    <div class="face back"><div class="band"></div><div class="inner">
+      <div class="tag">${t.label}</div><div class="topic">${Q}</div>
+      <div class="a">${A}</div>
+    </div></div>
+  </button></div>
+  <div class="controls">
+    <button class="btn again" id="againBtn">Tekrar et</button>
+    <button class="btn know" id="knowBtn">Biliyorum</button>
+  </div>
+  <div class="nav"><button class="btn" id="prevBtn">Önceki</button><button class="btn" id="nextBtn">Sonraki</button></div>`;
+  const card=$("#card");
+  const fit=()=>{const f=card.querySelector(".front .inner"),b=card.querySelector(".back .inner");
+    card.style.minHeight=Math.max(340,f.scrollHeight+12,b.scrollHeight+12)+"px"};
+  fit();
+  card.onclick=()=>{flipped=!flipped;card.classList.toggle("flipped",flipped)};
+  $("#knowBtn").onclick=()=>{known.add(c.id);store.set([...known]);next(true)};
+  $("#againBtn").onclick=()=>{known.delete(c.id);store.set([...known]);next(false)};
+  $("#prevBtn").onclick=()=>{idx=(idx-1+d.length)%d.length;render()};
+  $("#nextBtn").onclick=()=>{idx=(idx+1)%d.length;render()};
+}
+function next(markedKnown){
+  const d=deck();
+  if(hideKnown&&markedKnown){ render(); return; }
+  idx=(idx+1)%Math.max(1,d.length); render();
+}
+$("#shuffleBtn").onclick=()=>{for(let i=order.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[order[i],order[j]]=[order[j],order[i]]}idx=0;render()};
+$("#hideKnownBtn").onclick=e=>{hideKnown=!hideKnown;e.target.setAttribute("aria-pressed",hideKnown);e.target.textContent=hideKnown?"Bildiklerimi göster":"Bildiklerimi gizle";idx=0;render()};
+$("#revBtn").onclick=e=>{reverse=!reverse;e.target.setAttribute("aria-pressed",reverse);e.target.textContent=reverse?"Jenerik addan sor":"Piyasa adından sor";render()};
+$("#resetBtn").onclick=()=>{known=new Set();store.set([]);render()};
+document.addEventListener("keydown",e=>{
+  if(e.key==="ArrowRight")$("#nextBtn")?.click();
+  if(e.key==="ArrowLeft")$("#prevBtn")?.click();
+  if(e.key===" "&&document.activeElement.id!=="card"){e.preventDefault();$("#card")?.click()}
+});
+
+
+const MN = [
+["Benzodiazepin & anksiyolitik",[
+ ["BZD yan etkileri","SABAİ","<b>S</b>edasyon, <b>A</b>taksi, <b>B</b>aş dönmesi, <b>A</b>mnezi, <b>İ</b>nkontinans (idrar)"],
+ ["Karaciğer hastasında BZD","L = Liver","<b>L</b>orazepam karaciğeri (<b>L</b>iver) yormaz: P450 değil, konjugasyon."],
+ ["Parenteral / damla formları","Damar: D–M · Damla: Klon","İğne olan: <b>D</b>iazepam, <b>M</b>idazolam. Ağızdan solüsyon: yalnızca <b>Klon</b>azepam (RIVOTRIL damla)."],
+ ["Buspiron","Bus geç gelir","<b>Bus</b>piron = otobüs: tek dozla gelmez, ~3 hafta beklersin. Ama bağımlılık yapmaz, alkolle kavga etmez."],
+ ["Beta bloker","Sahneden 1 saat önce","Performans anksiyetesi: titreyen eli tutar, kafadaki kaygıyı değil. Kalp-akciğer hastasında dur."]
+]],
+["Antidepresan",[
+ ["Ani kesilince kesilme belirtisi yapanlar","TV'yi pat diye kapatma","<b>T</b>risiklik, <b>V</b>enlafaksin, <b>P</b>aroksetin → hep tedrici azalt."],
+ ["Etki süresi","3–6 hafta, yan etki 1. gün","Yan etki hemen, fayda sonra gelir. Hastaya önceden söyle."],
+ ["İdame","6 ay – 1 yıl","Tam iyilikten sonra en az 6 ay, tercihen 1 yıl. Relaps = ilk 6 ay; sonrası rekürrens."],
+ ["Yanıt","%50 ve 2/3","Ölçekte %50 düzelme = yanıt. Hastaların 2/3'ü yanıt verir."],
+ ["Dirençte güçlendirme","Lİ-OK-T3-BUS-EKT","<b>Li</b>tyum, <b>O</b>lanzapin/<b>K</b>etiyapin (düşük doz), <b>T3</b>-T4, <b>Bus</b>piron, <b>EKT</b> (+ farklı mekanizmalı 2. antidepresan)"],
+ ["M1 (antikolinerjik) yan etkileri","Kuru, kör, kabız, kalbi hızlı, kafası karışık","Ağız kuruluğu, bulanık görme, konstipasyon, taşikardi, bilişsel bozulma + idrar güçlüğü (prostat!). İngilizce klasik: <i>can't see, can't pee, can't spit, can't shit</i>."],
+ ["H1 ve α1","H1 = Hamburger + Horlama · α1 = Ayağa kalkınca","H1: kilo + sedasyon. α1: postural hipotansiyon, taşikardi."],
+ ["Serotonin reseptörleri","2A uyutmaz, 2C seks bozar, 3 kusturur","5-HT2A: uykusuzluk, ajitasyon, cinsel. 5-HT2C: iştahsızlık, cinsel. 5-HT3: bulantı-kusma. Tedavi yolu 5-HT1A."],
+ ["-FRANIL ailesi","ToFRANIL – AnaFRANIL","İkisi de “-mipramin”: <b>To</b>franil = <b>İ</b>mipramin, <b>Ana</b>franil = <b>Klo</b>mipramin."],
+ ["Ses benzerliği","serTRALin → lusTRAL","venla<b>FAKS</b>in → e<b>FEX</b>or · <b>PA</b>roksetin → <b>PA</b>xil · <b>F</b>lu<b>V</b>oksamin → <b>F</b>a<b>V</b>erin · <b>BU</b>propion → Well<b>BU</b>trin"],
+ ["CIPRAM / CIPRALEX","EKS'tra S","<b>Es</b>sitalopram, sitaloprama göre fazladan “es” alır → Cipral<b>ex</b>. Sitalopram düz <b>Cipram</b>."],
+ ["Uyutan antidepresanlar","REMeron, VALDOXAN","Mirtazapin = <b>REM</b>eron (REM uykusu, sedatif). Agomelatin = <b>mela</b>tonin etkili VALDOXAN."]
+]],
+["Antipsikotik",[
+ ["D2 yolakları","LİMBİK iyileştirir, gerisi bozar","<ul><li><b>Mezolimbik</b> → pozitif belirtiler ↓ (tedavi)</li><li><b>Mezokortikal</b> → negatif belirtiler ↑ (Kortex = Keyifsizlik)</li><li><b>Nigrostriatal</b> → EPS (hareket)</li><li><b>Tuberoinfundibuler</b> → prolaktin ↑ (Tuber = Tıp-süt: galaktore)</li></ul>"],
+ ["EPS sıralaması","Kısa: DPA · Uzun: Tardiv","Kısa dönem: <b>D</b>istoni, <b>P</b>arkinsonizm, <b>A</b>katizi. Uzun dönem: tardiv diskinezi / tardiv distoni."],
+ ["Klozapin – lökosit","3 bin ara, 2 bin elveda","<3000 → kes, düzelince başla. <2000 → bir daha asla. İlk 4,5 ay haftalık, sonra aylık. Sıklık %1."],
+ ["QTc","Kadın hep +20","Normal: E 430 / K 450. Başlama: E 450 / K 470. 500 = kırmızı çizgi. Tedavide +25 ms → kes."],
+ ["NMS","FEVER","<b>F</b>ever (ateş), <b>E</b>ncephalopathy (stupor/deliryum), <b>V</b>ital instabilite (otonomik), <b>E</b>levated CPK (≥3 kat) + lökositoz, <b>R</b>ijidite (kurşun boru)."],
+ ["Metabolik sendrom","Erkek 102-40 · Kadın 88-50 · Ortak 150-130/85-110","Bel çevresi ve HDL cinsiyete göre; trigliserid 150, KB 130/85, açlık şekeri 110."],
+ ["Tipik sınıflar sondan bilinir","-AZİN = fenotiyazin · -TİKSOL = tiyoksanten","Klorprom<b>azin</b>, trifluoper<b>azin</b>, flufen<b>azin</b>. Zuklopen<b>tiksol</b>, flupen<b>tiksol</b>. Kalanlar: haloperidol (butirofenon), pimozid (difenilbütilpiperidin)."],
+ ["NORO- ikilisi","NORODOL – NOROFREN","İki tipik: NORODOL = haloperidol, NOROFREN = pimozid."],
+ ["Aynı harfle başlayanlar","A-A · Z-Z · R-R","<b>A</b>bilify = <b>A</b>ripiprazol, <b>Z</b>eldox = <b>Z</b>iprasidon, <b>R</b>isperdal = <b>R</b>isperidon. Zyprexa ise <b>O</b>lanzapin (Z ile karıştırma)."],
+ ["Klozapin","Kilitli kapıyı açan anahtar","Tedaviye dirençli şizofrenide etkinliği kanıtlanmış tek ilaç. Direnç: 2 farklı sınıf, 600 mg KPZ eşdeğeri, 4–6 hafta."],
+ ["Süre","İlk = 1 yıl · Tekrar = ömür boyu","İlk psikozda tam iyilikten 1 yıl sonra kesilebilir; tekrarlayanlarda yaşam boyu."]
+]],
+["Duygudurum düzenleyici",[
+ ["Lityum düzeyi","0,8 menteşe","Akut mani 0,8'den <b>yukarı</b> (0,8–1,2), profilaksi 0,8'den <b>aşağı</b> (0,4–0,8)."],
+ ["Lityum yan etkileri","5T","<b>T</b>itreme (tremor), <b>T</b>iroid (hipotiroidi, guatr), <b>T</b>uvalet (poliüri, nefrojenik DI), <b>T</b>artı (kilo), <b>T</b>en (akne, psöriazis)"],
+ ["Lityum intoksikasyonu","1,5 titrer · 2,5 şaşırır · 4 kalbi durur","1,5: yan etkiler şiddetlenir. 2,5: konfüzyon. ~4: aritmi, böbrek yetmezliği, koma. Tek tedavi: <b>hemodiyaliz</b>."],
+ ["Lityum öncesi tetkik","KTB: Kalp – Tiroid – Böbrek","EKG, tiroid ve böbrek işlevleri. Tiroid-böbrek yılda bir, kan düzeyi en az 6 ayda bir."],
+ ["Lityum doz düşür","Tuz az, ter çok","Tuz kısıtlaması ya da çok terleten işte lityum birikir → dozu düşür, sık ölç."],
+ ["Kan düzeyi ölçümü","5'e 12","Dozdan en az 5 gün sonra, son dozdan tam 12 saat sonra; önce kan, sonra ilaç."],
+ ["Lamotrijin etkileşimi","Karbamazepin Katlar, Valproat Yarılar","KBZ ile doz × 2, valproat ile doz ÷ 2. Korkulacak: döküntü."],
+ ["Karbamazepin","Kanı, tuzu, deriyi bozar","Aplastik anemi, hiponatremi, Stevens-Johnson."],
+ ["Valproat","KaPaKS","<b>Ka</b>raciğer (çocukta), <b>Pa</b>nkreatit, <b>K</b>ilo, <b>S</b>aç dökülmesi"]
+]],
+["Bilişsel iyileştirici",[
+ ["Alzheimer ilaçları","MEMantin = MEMory, REMINyl = REMIND","Memantin (EBIXA) NMDA blokeri; diğerleri (donepezil ARICEPT, rivastigmin EXELON patch, galantamin REMINYL) AChE inhibitörü."]
+]],
+["EKT & TMS",[
+ ["EKT endikasyonları","DeMKa","Dirençli <b>De</b>presyon, <b>M</b>ani, <b>Ka</b>tatonik şizofreni"],
+ ["EKT kontrendikasyonları","KEFeM","<b>K</b>afa içi yer kaplayan lezyon (herniasyon riski), ağır <b>E</b>nfeksiyon (sistemik/SSS), <b>Fe</b>okromositoma, yeni <b>M</b>İ"],
+ ["EKT ve BZD","BZD nöbeti söndürür","Konvülsiyon eşiğini yükseltir → EKT döneminde özellikle kaçın."],
+ ["EKT sayıları","Haftada 3, kürde 6–12","Haftada 2 de eşdeğer: daha az bilişsel yan etki ama daha uzun süre. Bilateral = daha etkili, unilateral = daha az unutkanlık."],
+ ["Tarih","1938 – Cerletti ve Bini","İlk EKT İtalya'da."]
+]]
+];
+function renderMn(){
+  const box=document.getElementById("mnList");
+  const list = topic==="Tümü"?MN:MN.filter(m=>m[0]===topic);
+  box.innerHTML=list.map(([tp,items])=>`<h2>${tp}</h2>`+items.map(i=>`<div class="mi"><div class="t">${i[0]}</div><div class="k">${i[1]}</div><div class="d">${i[2]}</div></div>`).join("")).join("");
+}
+document.getElementById("vMn").onclick=()=>setView("mn");
+
+let view="cards", query="";
+const norm=s=>s.toLocaleLowerCase("tr");
+function renderTable(){
+  const tb=document.getElementById("tbody"); let html="", n=0;
+  const topics = topic==="Tümü"?TOPICS:[topic];
+  topics.forEach(tp=>{
+    const rows=DRUGS.filter(d=>d[0]===tp&&(!query||norm(d.slice(1).join(" ")).includes(norm(query))));
+    if(!rows.length) return;
+    html+=`<tr class="grp"><td colspan="5">${tp}</td></tr>`;
+    rows.forEach(d=>{n++;html+=`<tr><td class="gen">${d[1]}</td><td class="tic">${d[2]}</td><td>${d[5]}</td><td>${d[3]||"–"}</td><td>${d[4]||"–"}</td></tr>`});
+  });
+  tb.innerHTML=html||`<tr><td colspan="5">Aramana uyan ilaç yok. Başka bir ad dene ya da konu filtresini “Tümü” yap.</td></tr>`;
+  document.getElementById("tcount").textContent=`${n} ilaç`;
+}
+function setView(v){
+  view=v;
+  document.getElementById("vCards").setAttribute("aria-pressed",v==="cards");
+  document.getElementById("vTable").setAttribute("aria-pressed",v==="table");
+  document.getElementById("cardView").hidden=v!=="cards";
+  document.getElementById("tableView").hidden=v!=="table";
+  document.getElementById("mnView").hidden=v!=="mn";
+  document.getElementById("vMn").setAttribute("aria-pressed",v==="mn");
+  document.getElementById("tagRow").hidden=v!=="cards";
+  render();
+}
+document.getElementById("vCards").onclick=()=>setView("cards");
+document.getElementById("vTable").onclick=()=>setView("table");
+document.getElementById("q").oninput=e=>{query=e.target.value;renderTable()};
+render();
+</script>
+</body>
+</html>
